@@ -1,0 +1,27 @@
+name: gsure-diff
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.10
+  - mamba
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=11.7
+  - ca-certificates
+  - certifi
+  - openssl
+  - tqdm
+  - matplotlib
+  - pandas
+  - ninja
+  - pyyaml
+  - wandb
+  - torchmetrics
+  - tensorboardx
+  - ignite
+  - transformers
+  - scipy
+  - ipython

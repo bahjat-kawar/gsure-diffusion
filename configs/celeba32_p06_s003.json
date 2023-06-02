@@ -1,0 +1,108 @@
+{
+    "name": "celeba32_p06_s003", // experiments name
+    "gpu_ids": [0], // gpu ids list, default is single 0
+    "seed" : -1, // random seed, seed <0 represents randomization not used 
+    "finetune_norm": false, // find the parameters to optimize
+
+    "path": { //set every part file path
+        "base_dir": "experiments", // base path for all log except resume_state
+        "code": "code", // code backup
+        "tb_logger": "tb_logger", // path of tensorboard logger
+        "results": "results",
+        "checkpoint": "checkpoint",
+        "resume_state": null
+        // "resume_state": null // ex: 100, loading .state  and .pth from given epoch and iteration
+    },
+
+    "datasets": { // train or test
+        "train": { 
+            "which_dataset": {  // import designated dataset using arguments 
+                "name": "MaskedCelebA", // import Dataset() class / function(not recommend) from data.dataset.py (default is [data.dataset.py])
+                "args":{ // arguments to initialize dataset
+                    "data_root": "datasets/celeba_corrupted_prob06_sigma003/",
+                    "image_size": [32, 32],
+                    "data_len": -1
+                }
+            },
+            "dataloader":{
+                "args":{ // arguments to initialize train_dataloader
+                    "batch_size": 128, // batch size in each gpu
+                    "num_workers": 10,
+                    "shuffle": true,
+                    "pin_memory": true,
+                    "drop_last": true
+                }
+            }
+        },
+        "validation": {
+            "which_dataset": {  // import designated dataset using arguments
+                "name": "CelebAWrapper", // import Dataset() class / function(not recommend) from data.dataset.py (default is [data.dataset.py])
+                "args":{ // arguments to initialize dataset
+                    "data_root": "datasets/",
+                    "image_size": [32, 32],
+                    "grayscale": true
+                }
+            },
+            "dataloader":{
+                "args":{ // arguments to initialize train_dataloader
+                    "batch_size": 4, // batch size in each gpu
+                    "num_workers": 0,
+                    "shuffle": false,
+                    "pin_memory": true,
+                    "drop_last": false
+                }
+            }
+        }
+    },
+
+    "model": { // networks/metrics/losses/optimizers/lr_schedulers is a list and model is a dict
+        "trainer": { // import designated  model(trainer) using arguments
+            "name": ["models.model", "Trainer"], // import Model() class / function(not recommend) from models.model.py (default is [models.model.py])
+            "args": {
+                "ema_scheduler": {
+                    "ema_start": 1,
+                    "ema_iter": 1,
+                    "ema_decay": 0.9999
+                },
+                "optimizers": [
+                    { "lr": 5e-5, "weight_decay": 0}
+                ],
+                "sigma_0": 0.03
+            }
+        }, 
+        "network": // import designated list of networks using arguments
+        {
+            "name": ["models.ddim.diffusion", "Model"], // import Network() class / function(not recommend) from default file (default is [models/network.py])
+            "args": {
+                "channels": 128,
+                "in_channels":  1,
+                "out_channels":  1,
+                "ch_mult":  [1, 2, 2, 2, 4],
+                "num_res_blocks":  2,
+                "attn_resolutions":  [16],
+                "dropout":  0.1,
+                "image_size":  32,
+                "resamp_with_conv": true
+            }
+        },
+        "diffusion": {
+            "beta_schedule": {
+                        "beta_schedule": "linear",
+                        "beta_start": 0.0009,
+                        "beta_end": 0.02,
+                        "num_diffusion_timesteps": 1000
+                    }
+        },
+        "Lambda": 0.0001,
+        "mean_type": "x"
+    },
+
+    "train": { // arguments for basic training
+        "n_epoch": 6e3, // max epochs, not limited now
+        "n_iter": 180000, // max interations
+        "val_epoch": 1, // valdation every specified number of epochs
+        "save_checkpoint_epoch": 5,
+        "log_iter": 1e2, // log every specified number of iterations
+        "tensorboard" : true // tensorboardX enable
+    }
+}
